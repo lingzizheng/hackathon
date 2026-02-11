@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<!-- saved from url=(0059)file:///Users/lingzi/Downloads/relay-knowledge-base_11.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knowledge Base — Relay Protocol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="./Knowledge Base — Relay Protocol_files/css2" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#020502;--surface:#050a05;--surface-hover:#080e08;--panel:#040804;
+  --border:#1a2a1a;--border-light:#0a150a;--green:#0f0;--green-dim:#0a6;
+  --green-muted:#8a8;--text:#cec;--text-dim:#556;--text-faint:#334;
+  --text-ghost:#1a2a1a;--blue:#0bf;--amber:#fb0;--red:#f44;
+  --mono:'JetBrains Mono',monospace;--serif:'Instrument Serif',serif;
+}
+::selection{background:rgba(0,255,100,.2)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14px;min-height:100vh;-webkit-font-smoothing:antialiased}
+a{color:var(--green-dim);text-decoration:none}
+a:hover{text-decoration:underline}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes scanline{0%{transform:translateY(-100%)}100%{transform:translateY(100vh)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes toastOut{from{opacity:1}to{opacity:0;transform:translateY(10px)}}
+
+.scanline{position:fixed;top:0;left:0;right:0;height:2px;background:rgba(0,255,100,.03);z-index:0;animation:scanline 8s linear infinite;pointer-events:none}
+.container{max-width:800px;margin:0 auto;padding:0 24px}
+
+header{border-bottom:1px solid var(--border-light);padding:28px 0 24px}
+.header-top{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.status-dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(0,255,0,.4);animation:pulse 3s ease-in-out infinite;flex-shrink:0}
+.header-title{font-family:var(--serif);font-size:32px;font-weight:400;color:#dfd;letter-spacing:-.5px}
+.header-meta{display:flex;align-items:center;justify-content:space-between;margin-top:2px}
+.header-repo{color:#3a4a3a;font-size:12px;letter-spacing:1px}
+.header-stats{display:flex;gap:16px;font-size:11px;color:var(--text-faint)}
+.header-stats .c-blue{color:var(--blue)}
+.header-stats .c-amber{color:var(--amber)}
+
+/* Tabs */
+.tabs{display:flex;gap:8px;margin-bottom:32px;flex-wrap:wrap}
+.tab-btn{background:transparent;border:1px solid transparent;color:#667;padding:10px 20px;font-family:var(--mono);font-size:13px;cursor:pointer;border-radius:6px;transition:all .2s;display:flex;align-items:center;gap:8px}
+.tab-btn:hover{color:#889}
+.tab-btn.active{background:rgba(0,255,100,.08);border-color:rgba(0,255,100,.3);color:var(--green)}
+.tab-icon{font-size:16px}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+.form-panel{background:var(--panel);border:1px solid var(--border-light);border-radius:12px;padding:32px}
+.form-heading{font-size:11px;color:#3a4a3a;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{margin-bottom:20px}
+.field:last-child{margin-bottom:0}
+.field-label{display:block;color:var(--green-muted);font-size:11px;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}
+.input{width:100%;padding:12px 16px;background:#0a0f0a;border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:14px;outline:none;transition:border-color .2s}
+.input:focus{border-color:var(--green-dim)}
+
+.or-divider{display:flex;align-items:center;gap:16px;margin:4px 0 20px;color:#2a3a2a;font-size:11px;letter-spacing:2px;text-transform:uppercase}
+.or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:#0a150a}
+
+.dropzone{border:2px dashed var(--border);border-radius:8px;padding:28px 24px;text-align:center;cursor:pointer;transition:all .25s}
+.dropzone:hover,.dropzone.dragover{border-color:var(--green);background:rgba(0,255,0,.03)}
+.dropzone.has-file{border-style:solid;border-color:#1a3a1a;background:rgba(0,255,100,.02)}
+.dropzone-icon{font-size:24px;margin-bottom:8px;opacity:.4}
+.dropzone-text{color:var(--text-dim);font-size:13px}
+.dropzone-text a{color:var(--green-dim);text-decoration:underline;cursor:pointer}
+.dropzone-hint{color:var(--text-faint);font-size:11px;margin-top:6px}
+.dropzone-filename{color:var(--green);font-size:13px;font-weight:600}
+.dropzone input[type="file"]{display:none}
+.dropzone-clear{background:none;border:none;color:#844;font-size:11px;font-family:var(--mono);cursor:pointer;margin-top:6px;text-decoration:underline}
+.dropzone-clear:hover{color:var(--red)}
+
+.btn{border:none;padding:12px 32px;border-radius:6px;font-family:var(--mono);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;color:#000}
+.btn-green{background:var(--green)}
+.btn-green:hover{box-shadow:0 0 20px rgba(0,255,0,.3)}
+
+.btn-sm{padding:8px 16px;border-radius:6px;font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .2s;border:none;background:transparent}
+.btn-clear{border:1px solid #2a1515;color:#844}
+.btn-clear:hover{background:rgba(255,68,68,.05)}
+.btn-export{background:rgba(0,255,100,.08);border:1px solid rgba(0,255,100,.2);color:var(--green);font-weight:600}
+.btn-export:hover{background:rgba(0,255,100,.14)}
+.btn-download-all{background:rgba(255,187,0,.08);border:1px solid rgba(255,187,0,.2);color:var(--amber);font-weight:600}
+.btn-download-all:hover{background:rgba(255,187,0,.14)}
+
+.section-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.section-title{font-size:11px;color:var(--text-faint);letter-spacing:1.5px;text-transform:uppercase}
+.section-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:all .25s;display:flex;flex-direction:column;position:relative;animation:fadeIn .4s ease both}
+.card:hover{background:var(--surface-hover);transform:translateY(-2px)}
+.card.is-link:hover{border-color:rgba(0,180,255,.2);box-shadow:0 8px 24px rgba(0,180,255,.06)}
+.card.is-skill:hover{border-color:rgba(255,180,0,.2);box-shadow:0 8px 24px rgba(255,180,0,.06)}
+.card-bar{height:3px;opacity:.4;transition:opacity .25s}
+.card:hover .card-bar{opacity:1}
+.card.is-link .card-bar{background:linear-gradient(90deg,#0bf,#08a)}
+.card.is-skill .card-bar{background:linear-gradient(90deg,#fb0,#a80)}
+.card-thumb{height:100px;display:flex;align-items:center;justify-content:center;position:relative}
+.card.is-link .card-thumb{background:linear-gradient(135deg,rgba(0,60,90,.25),rgba(0,20,30,.4))}
+.card.is-skill .card-thumb{background:linear-gradient(135deg,rgba(90,60,0,.25),rgba(30,20,0,.4))}
+.card-thumb-icon{font-size:32px;opacity:.5}
+.card-badge{position:absolute;top:8px;left:8px;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px}
+.card.is-link .card-badge{background:rgba(0,180,255,.15);color:var(--blue)}
+.card.is-skill .card-badge{background:rgba(255,180,0,.15);color:var(--amber)}
+.card-delete{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.5);border:none;color:#444;cursor:pointer;font-size:14px;width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .2s;opacity:0}
+.card:hover .card-delete{opacity:1;color:var(--red)}
+.card-body{padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:6px}
+.card-title{color:var(--text);font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-domain{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card.is-link .card-domain{color:var(--green-dim)}
+.card.is-skill .card-domain{color:#a80}
+.card-desc{color:#445;font-size:11px;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.card-dl-btn{display:block;width:100%;padding:7px 0;margin-top:8px;background:rgba(255,187,0,.08);border:1px solid rgba(255,187,0,.2);color:var(--amber);font-family:var(--mono);font-size:11px;font-weight:600;border-radius:5px;cursor:pointer;transition:all .2s;text-align:center;letter-spacing:.5px}
+.card-dl-btn:hover{background:rgba(255,187,0,.18);box-shadow:0 0 12px rgba(255,187,0,.1)}
+.card-footer{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;margin-top:auto;padding-top:4px}
+.card-tags{display:flex;gap:4px;flex-wrap:wrap;flex:1;min-width:0}
+.card-tag{background:rgba(0,255,100,.06);border:1px solid rgba(0,255,100,.12);color:#5a5;padding:1px 6px;border-radius:3px;font-size:9px}
+.card-tag-more{color:var(--text-faint);font-size:9px}
+.card-time{color:#223;font-size:9px;white-space:nowrap}
+
+.empty{text-align:center;padding:48px 24px;color:#223}
+.empty-icon{font-size:36px;margin-bottom:12px;opacity:.3}
+.empty-hint{font-size:12px;margin-top:8px;color:var(--text-ghost)}
+
+.toast{position:fixed;bottom:32px;right:32px;padding:12px 22px;border-radius:4px;font-size:13px;font-weight:600;z-index:9999;animation:toastIn .35s cubic-bezier(.21,1.02,.55,1);font-family:var(--mono)}
+.toast.success{background:var(--green);color:#000;box-shadow:0 0 24px rgba(0,255,0,.25)}
+.toast.error{background:var(--red);color:#000;box-shadow:0 0 24px rgba(255,68,68,.25)}
+.toast.hiding{animation:toastOut .3s ease forwards}
+
+@media(max-width:600px){
+  .container{padding:0 16px}
+  .form-panel{padding:20px}
+  .form-row{grid-template-columns:1fr}
+  .header-title{font-size:24px}
+  .gallery{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+  .section-bar{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<header>
+  <div class="container">
+    <div class="header-top">
+      <div class="status-dot"></div>
+      <h1 class="header-title">Knowledge Base</h1>
+    </div>
+    <div class="header-meta">
+      <div class="header-repo">RELAY PROTOCOL · <a href="https://github.com/relayprotocol/knowledge-base" target="_blank">github.com/relayprotocol/knowledge-base</a></div>
+      <div class="header-stats">
+        <span><span class="c-blue" id="stat-links">0</span> links</span>
+        <span><span class="c-amber" id="stat-skills">0</span> skills</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container" style="padding-top:32px;padding-bottom:80px">
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="upload"><span class="tab-icon">↑</span> Upload</button>
+    <button class="tab-btn" data-tab="library"><span class="tab-icon">◎</span> Library</button>
+  </div>
+
+  <!-- Upload Tab -->
+  <div class="tab-panel active" id="tab-upload">
+    <div class="form-panel">
+      <div class="form-heading">→ Add to the knowledge base</div>
+
+      <div class="field">
+        <label class="field-label">Paste a Link</label>
+        <input class="input" type="text" id="input-url" placeholder="https://example.com/resource">
+      </div>
+
+      <div class="or-divider">or</div>
+
+      <div class="field">
+        <label class="field-label">Upload a Skill</label>
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="file-input" accept=".md,.txt,.json,.yaml,.yml,.py,.js,.ts,.zip">
+          <div class="dropzone-icon" id="dz-icon">↑</div>
+          <div id="dz-label">
+            <div class="dropzone-text">Drop your skill file here or <a>browse</a></div>
+            <div class="dropzone-hint">.md · .json · .yaml · .py · .js · .ts · .zip</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label class="field-label">Name (optional)</label>
+          <input class="input" type="text" id="input-name" placeholder="Give it a name">
+        </div>
+        <div class="field">
+          <label class="field-label">Description (optional)</label>
+          <input class="input" type="text" id="input-desc" placeholder="Brief description">
+        </div>
+      </div>
+
+      <button class="btn btn-green" id="btn-submit">+ Add to Knowledge Base</button>
+    </div>
+  </div>
+
+  <!-- Library Tab -->
+  <div class="tab-panel" id="tab-library">
+    <div id="gallery-section" style="display:none">
+      <div class="section-bar">
+        <div class="section-title" id="gallery-count">0 ENTRIES</div>
+        <div class="section-actions">
+          <button class="btn-sm btn-clear" id="btn-clear">Clear All</button>
+          <button class="btn-sm btn-download-all" id="btn-download-all" style="display:none">↓ Download All Skills</button>
+          <button class="btn-sm btn-export" id="btn-export">↓ Export JSON for GitHub</button>
+        </div>
+      </div>
+      <div class="gallery" id="gallery"></div>
+    </div>
+    <div id="gallery-empty" class="empty">
+      <div class="empty-icon">◎</div>
+      <div style="font-size:14px">No entries yet</div>
+      <div class="empty-hint">Switch to Upload to add links or skills</div>
+    </div>
+  </div>
+
+</main>
+<div id="toast-container"></div>
+
+<script>
+(function(){
+  var SK='relay-kb-submissions', subs=[], fileData={name:'',content:'',size:0};
+
+  function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+  function timeAgo(ts){
+    var s=Math.floor((Date.now()-ts)/1000);
+    if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+'m ago';
+    if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';
+  }
+  function isValidUrl(s){try{var u=new URL(s);return u.protocol==='http:'||u.protocol==='https:'}catch(e){return false}}
+  function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+  function load(){try{subs=JSON.parse(localStorage.getItem(SK)||'[]')}catch(e){subs=[]}}
+  function save(){localStorage.setItem(SK,JSON.stringify(subs))}
+
+  function toast(msg,type){
+    type=type||'success';
+    var el=document.createElement('div');
+    el.className='toast '+type;
+    el.textContent=(type==='success'?'✓ ':'✗ ')+msg;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(function(){el.classList.add('hiding')},2800);
+    setTimeout(function(){el.remove()},3200);
+  }
+
+  function updateCounts(){
+    document.getElementById('stat-links').textContent=subs.filter(function(s){return s.type==='link'}).length;
+    document.getElementById('stat-skills').textContent=subs.filter(function(s){return s.type==='skill'}).length;
+  }
+
+  // Tabs
+  var tabBtns=document.querySelectorAll('.tab-btn');
+  tabBtns.forEach(function(btn){
+    btn.addEventListener('click',function(){
+      tabBtns.forEach(function(b){b.classList.remove('active')});
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active')});
+      document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');
+      if(btn.getAttribute('data-tab')==='library') renderGallery();
+    });
+  });
+
+  // Dropzone
+  var dz=document.getElementById('dropzone'), fi=document.getElementById('file-input');
+  dz.addEventListener('click',function(){fi.click()});
+  dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('dragover')});
+  dz.addEventListener('dragleave',function(){dz.classList.remove('dragover')});
+  dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files[0])pickFile(e.dataTransfer.files[0])});
+  fi.addEventListener('change',function(){if(fi.files[0])pickFile(fi.files[0])});
+
+  function pickFile(f){
+    fileData.name=f.name;fileData.size=f.size;
+    var r=new FileReader();
+    r.onload=function(e){fileData.content=e.target.result};
+    r.readAsText(f);
+    dz.classList.add('has-file');
+    document.getElementById('dz-icon').textContent='📄';
+    document.getElementById('dz-label').innerHTML='<div class="dropzone-filename">'+esc(f.name)+'</div><button class="dropzone-clear" id="dz-clear">Remove file</button>';
+    document.getElementById('dz-clear').addEventListener('click',function(e){e.stopPropagation();resetFile()});
+  }
+  function resetFile(){
+    fileData={name:'',content:'',size:0};fi.value='';
+    dz.classList.remove('has-file');
+    document.getElementById('dz-icon').textContent='↑';
+    document.getElementById('dz-label').innerHTML='<div class="dropzone-text">Drop your skill file here or <a>browse</a></div><div class="dropzone-hint">.md · .json · .yaml · .py · .js · .ts · .zip</div>';
+  }
+
+  // Submit
+  document.getElementById('btn-submit').addEventListener('click',function(){
+    var url=document.getElementById('input-url').value.trim();
+    var hasFile=!!fileData.name;
+    var name=document.getElementById('input-name').value.trim();
+    var desc=document.getElementById('input-desc').value.trim();
+
+    if(!url&&!hasFile)return toast('Paste a link or upload a skill file','error');
+
+    if(url){
+      if(!isValidUrl(url))return toast('Enter a valid URL','error');
+      var host='';try{host=new URL(url).hostname}catch(e){host=url}
+      subs.unshift({id:genId(),type:'link',url:url,title:name||host,description:desc,tags:[],createdAt:Date.now()});
+    }
+    if(hasFile){
+      subs.unshift({id:genId(),type:'skill',title:name||fileData.name.replace(/\.[^.]+$/,''),description:desc,tags:[],fileName:fileData.name,fileSize:fileData.size,fileContent:fileData.content,createdAt:Date.now()});
+    }
+
+    save();updateCounts();
+    document.getElementById('input-url').value='';
+    document.getElementById('input-name').value='';
+    document.getElementById('input-desc').value='';
+    resetFile();
+    toast(url&&hasFile?'Link and skill added':url?'Link added':'Skill added');
+  });
+
+  // Download helper
+  function dlFile(name,content){
+    var blob=new Blob([content],{type:'application/octet-stream'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.style.display='none';
+    a.href=url;
+    a.download=name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url)},250);
+  }
+
+  // Gallery render
+  function renderGallery(){
+    var sec=document.getElementById('gallery-section');
+    var gal=document.getElementById('gallery');
+    var empty=document.getElementById('gallery-empty');
+    var dlAll=document.getElementById('btn-download-all');
+    var skills=subs.filter(function(s){return s.type==='skill'&&s.fileContent});
+
+    if(!subs.length){sec.style.display='none';empty.style.display='';return}
+
+    sec.style.display='';empty.style.display='none';
+    dlAll.style.display=skills.length?'':'none';
+    document.getElementById('gallery-count').textContent=subs.length+' ENTRIES';
+
+    var html='';
+    for(var i=0;i<subs.length;i++){
+      var item=subs[i];
+      var isLink=item.type==='link';
+      var domain='';try{domain=new URL(item.url).hostname.replace('www.','')}catch(e){}
+      var title=esc(item.title||item.url||item.fileName||'Untitled');
+      var titleAttr=esc(item.title||item.url||item.fileName||'');
+
+      var dlBtn='';
+      if(!isLink){
+        dlBtn='<button class="card-dl-btn" data-dl="'+item.id+'">↓ Download Skill</button>';
+      }
+
+      html+='<div class="card '+(isLink?'is-link':'is-skill')+'" style="animation-delay:'+i*0.04+'s">';
+      html+='<div class="card-bar"></div>';
+      html+='<div class="card-thumb"><div class="card-thumb-icon">'+(isLink?'🔗':'⚡')+'</div>';
+      html+='<span class="card-badge">'+(isLink?'Link':'Skill')+'</span>';
+      html+='<button class="card-delete" data-del="'+item.id+'" title="Remove">×</button></div>';
+      html+='<div class="card-body">';
+      html+='<div class="card-title" title="'+titleAttr+'">'+title+'</div>';
+      if(isLink&&domain)html+='<div class="card-domain">'+esc(domain)+'</div>';
+      if(!isLink&&item.fileName)html+='<div class="card-domain">📄 '+esc(item.fileName)+'</div>';
+      if(item.description)html+='<div class="card-desc">'+esc(item.description)+'</div>';
+      html+=dlBtn;
+      html+='<div class="card-footer"><div class="card-tags"></div><span class="card-time">'+timeAgo(item.createdAt)+'</span></div>';
+      html+='</div></div>';
+    }
+    gal.innerHTML=html;
+  }
+
+  // Gallery click delegation
+  document.getElementById('gallery').addEventListener('click',function(e){
+    var dlBtn=e.target.closest('[data-dl]');
+    if(dlBtn){
+      var item=subs.find(function(s){return s.id===dlBtn.getAttribute('data-dl')});
+      if(item&&item.fileContent){
+        dlFile(item.fileName||'skill.txt',item.fileContent);
+        toast('Downloaded '+(item.fileName||'skill'));
+      }else{
+        toast('No file content to download','error');
+      }
+      return;
+    }
+    var delBtn=e.target.closest('[data-del]');
+    if(delBtn){
+      subs=subs.filter(function(s){return s.id!==delBtn.getAttribute('data-del')});
+      save();updateCounts();renderGallery();toast('Removed');
+    }
+  });
+
+  // Bulk download
+  document.getElementById('btn-download-all').addEventListener('click',function(){
+    var skills=subs.filter(function(s){return s.type==='skill'&&s.fileContent});
+    if(!skills.length)return toast('No skills to download','error');
+    if(skills.length===1){dlFile(skills[0].fileName||'skill.txt',skills[0].fileContent);return toast('Downloaded '+(skills[0].fileName||'skill'))}
+    var bundle={exportedAt:new Date().toISOString(),totalSkills:skills.length,skills:skills.map(function(s){return{id:s.id,title:s.title,fileName:s.fileName,description:s.description,fileContent:s.fileContent,createdAt:new Date(s.createdAt).toISOString()}})};
+    dlFile('relay-skills-bundle-'+Date.now()+'.json',JSON.stringify(bundle,null,2));
+    toast('Downloaded '+skills.length+' skills as bundle');
+  });
+
+  // Clear
+  document.getElementById('btn-clear').addEventListener('click',function(){subs=[];save();updateCounts();renderGallery();toast('All entries cleared')});
+
+  // Export
+  document.getElementById('btn-export').addEventListener('click',function(){
+    var p={repository:'relayprotocol/knowledge-base',exportedAt:new Date().toISOString(),totalEntries:subs.length,entries:subs.map(function(s){var o={id:s.id,type:s.type,title:s.title,description:s.description,tags:s.tags,createdAt:new Date(s.createdAt).toISOString()};if(s.url)o.url=s.url;if(s.fileName)o.fileName=s.fileName;if(s.fileContent)o.fileContent=s.fileContent;return o})};
+    dlFile('relay-kb-export-'+Date.now()+'.json',JSON.stringify(p,null,2));
+    toast('Exported — ready to push to GitHub');
+  });
+
+  load();updateCounts();
+})();
+</script>
+
+
+</body></html>
