@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Knowledge Base — Relay Protocol</title>
+<title>Hackathon Database — Relay Protocol</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -223,6 +223,39 @@ header{border-bottom:1px solid var(--border-light);padding:var(--sp-xl) 0 var(--
 }
 .dropzone-clear:hover{color:var(--tomato-10)}
 
+/* ---- Preview Dropzone ---- */
+.preview-dropzone{
+  border:2px dashed var(--border);
+  border-radius:var(--r-md);
+  padding:var(--sp-md) var(--sp-lg);
+  text-align:center;
+  cursor:pointer;
+  transition:all .25s;
+  position:relative;
+}
+.preview-dropzone:hover,.preview-dropzone.dragover{
+  border-color:var(--primary);
+  background:rgba(70,21,200,.04);
+}
+.preview-dropzone.has-file{
+  border-style:solid;
+  border-color:var(--violet-6);
+  background:rgba(70,21,200,.03);
+  padding:var(--sp-sm);
+}
+.preview-dropzone input[type="file"]{display:none}
+.preview-dropzone .dropzone-icon{font-size:20px;margin-bottom:var(--sp-xs);opacity:.4}
+.preview-dropzone .dropzone-text{color:var(--text-dim);font-size:13px}
+.preview-dropzone .dropzone-text a{color:var(--primary-text);text-decoration:underline;cursor:pointer}
+.preview-dropzone .dropzone-hint{color:var(--text-faint);font-size:11px;margin-top:var(--sp-xs)}
+.preview-thumb{max-width:100%;max-height:160px;border-radius:var(--r-sm);object-fit:cover}
+.preview-video{max-width:100%;max-height:160px;border-radius:var(--r-sm)}
+.preview-filename{color:var(--primary-text);font-size:13px;font-weight:600;margin-top:var(--sp-xs)}
+
+/* Card preview image/video */
+.card-preview{width:100%;height:120px;object-fit:cover;display:block}
+.card-preview-video{width:100%;height:120px;object-fit:cover;display:block}
+
 /* ---- Buttons ---- */
 .btn{
   border:none;
@@ -387,10 +420,10 @@ header{border-bottom:1px solid var(--border-light);padding:var(--sp-xl) 0 var(--
   <div class="container">
     <div class="header-top">
       <div class="status-dot"></div>
-      <h1 class="header-title">Knowledge Base</h1>
+      <h1 class="header-title">Hackathon Database</h1>
     </div>
     <div class="header-meta">
-      <div class="header-repo">RELAY PROTOCOL · <a href="https://github.com/relayprotocol/knowledge-base" target="_blank">github.com/relayprotocol/knowledge-base</a></div>
+      <div class="header-repo">RELAY PROTOCOL</div>
       <div class="header-stats">
         <span><span class="c-blue" id="stat-links">0</span> links</span>
         <span><span class="c-amber" id="stat-skills">0</span> skills</span>
@@ -404,13 +437,13 @@ header{border-bottom:1px solid var(--border-light);padding:var(--sp-xl) 0 var(--
   <!-- Tabs -->
   <div class="tabs">
     <button class="tab-btn active" data-tab="upload"><span class="tab-icon">↑</span> Upload</button>
-    <button class="tab-btn" data-tab="library"><span class="tab-icon">◎</span> Library</button>
+    <button class="tab-btn" data-tab="library"><span class="tab-icon">◎</span> Gallery</button>
   </div>
 
   <!-- Upload Tab -->
   <div class="tab-panel active" id="tab-upload">
     <div class="form-panel">
-      <div class="form-heading">Add to the knowledge base</div>
+      <div class="form-heading">Upload to the hackathon database</div>
 
       <div class="field">
         <label class="field-label">Paste a Link</label>
@@ -431,6 +464,18 @@ header{border-bottom:1px solid var(--border-light);padding:var(--sp-xl) 0 var(--
         </div>
       </div>
 
+      <div class="field">
+        <label class="field-label">Preview Image or Video (optional)</label>
+        <div class="preview-dropzone" id="preview-dropzone">
+          <input type="file" id="preview-input" accept="image/*,video/*">
+          <div class="dropzone-icon" id="pv-icon">🖼</div>
+          <div id="pv-label">
+            <div class="dropzone-text">Drop an image or video here or <a>browse</a></div>
+            <div class="dropzone-hint">.png · .jpg · .gif · .webp · .mp4 · .webm</div>
+          </div>
+        </div>
+      </div>
+
       <div class="form-row">
         <div class="field">
           <label class="field-label">Name (optional)</label>
@@ -442,7 +487,7 @@ header{border-bottom:1px solid var(--border-light);padding:var(--sp-xl) 0 var(--
         </div>
       </div>
 
-      <button class="btn btn-primary" id="btn-submit">ADD TO KNOWLEDGE BASE</button>
+      <button class="btn btn-primary" id="btn-submit">UPLOAD</button>
     </div>
   </div>
 
@@ -471,7 +516,8 @@ header{border-bottom:1px solid var(--border-light);padding:var(--sp-xl) 0 var(--
 
 <script>
 (function(){
-  var SK='relay-kb-submissions', subs=[], fileData={name:'',content:'',size:0};
+  var SK='relay-hackathon-db', subs=[], fileData={name:'',content:'',size:0};
+  var previewData={name:'',dataUrl:'',type:''};
 
   function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
   function timeAgo(ts){
@@ -511,7 +557,7 @@ header{border-bottom:1px solid var(--border-light);padding:var(--sp-xl) 0 var(--
     });
   });
 
-  // Dropzone
+  // Dropzone (skill file)
   var dz=document.getElementById('dropzone'), fi=document.getElementById('file-input');
   dz.addEventListener('click',function(){fi.click()});
   dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('dragover')});
@@ -536,29 +582,70 @@ header{border-bottom:1px solid var(--border-light);padding:var(--sp-xl) 0 var(--
     document.getElementById('dz-label').innerHTML='<div class="dropzone-text">Drop your skill file here or <a>browse</a></div><div class="dropzone-hint">.md · .json · .yaml · .py · .js · .ts · .zip</div>';
   }
 
+  // Preview dropzone (image/video)
+  var pvDz=document.getElementById('preview-dropzone'), pvFi=document.getElementById('preview-input');
+  pvDz.addEventListener('click',function(){pvFi.click()});
+  pvDz.addEventListener('dragover',function(e){e.preventDefault();pvDz.classList.add('dragover')});
+  pvDz.addEventListener('dragleave',function(){pvDz.classList.remove('dragover')});
+  pvDz.addEventListener('drop',function(e){e.preventDefault();pvDz.classList.remove('dragover');if(e.dataTransfer.files[0])pickPreview(e.dataTransfer.files[0])});
+  pvFi.addEventListener('change',function(){if(pvFi.files[0])pickPreview(pvFi.files[0])});
+
+  function pickPreview(f){
+    if(!f.type.match(/^(image|video)\//))return toast('Please select an image or video','error');
+    previewData.name=f.name;
+    previewData.type=f.type.startsWith('video/')?'video':'image';
+    var r=new FileReader();
+    r.onload=function(e){
+      previewData.dataUrl=e.target.result;
+      pvDz.classList.add('has-file');
+      var preview='';
+      if(previewData.type==='image'){
+        preview='<img src="'+e.target.result+'" class="preview-thumb" alt="Preview">';
+      } else {
+        preview='<video src="'+e.target.result+'" class="preview-video" muted autoplay loop></video>';
+      }
+      document.getElementById('pv-icon').style.display='none';
+      document.getElementById('pv-label').innerHTML=preview+'<div class="preview-filename">'+esc(f.name)+'</div><button class="dropzone-clear" id="pv-clear">Remove</button>';
+      document.getElementById('pv-clear').addEventListener('click',function(ev){ev.stopPropagation();resetPreview()});
+    };
+    r.readAsDataURL(f);
+  }
+  function resetPreview(){
+    previewData={name:'',dataUrl:'',type:''};pvFi.value='';
+    pvDz.classList.remove('has-file');
+    document.getElementById('pv-icon').style.display='';
+    document.getElementById('pv-icon').textContent='🖼';
+    document.getElementById('pv-label').innerHTML='<div class="dropzone-text">Drop an image or video here or <a>browse</a></div><div class="dropzone-hint">.png · .jpg · .gif · .webp · .mp4 · .webm</div>';
+  }
+
   // Submit
   document.getElementById('btn-submit').addEventListener('click',function(){
     var url=document.getElementById('input-url').value.trim();
     var hasFile=!!fileData.name;
     var name=document.getElementById('input-name').value.trim();
     var desc=document.getElementById('input-desc').value.trim();
+    var pv=previewData.dataUrl?{dataUrl:previewData.dataUrl,type:previewData.type,name:previewData.name}:null;
 
     if(!url&&!hasFile)return toast('Paste a link or upload a skill file','error');
 
     if(url){
       if(!isValidUrl(url))return toast('Enter a valid URL','error');
       var host='';try{host=new URL(url).hostname}catch(e){host=url}
-      subs.unshift({id:genId(),type:'link',url:url,title:name||host,description:desc,tags:[],createdAt:Date.now()});
+      var entry={id:genId(),type:'link',url:url,title:name||host,description:desc,tags:[],createdAt:Date.now()};
+      if(pv)entry.preview=pv;
+      subs.unshift(entry);
     }
     if(hasFile){
-      subs.unshift({id:genId(),type:'skill',title:name||fileData.name.replace(/\.[^.]+$/,''),description:desc,tags:[],fileName:fileData.name,fileSize:fileData.size,fileContent:fileData.content,createdAt:Date.now()});
+      var entry2={id:genId(),type:'skill',title:name||fileData.name.replace(/\.[^.]+$/,''),description:desc,tags:[],fileName:fileData.name,fileSize:fileData.size,fileContent:fileData.content,createdAt:Date.now()};
+      if(pv)entry2.preview=pv;
+      subs.unshift(entry2);
     }
 
     save();updateCounts();
     document.getElementById('input-url').value='';
     document.getElementById('input-name').value='';
     document.getElementById('input-desc').value='';
-    resetFile();
+    resetFile();resetPreview();
     toast(url&&hasFile?'Link and skill added':url?'Link added':'Skill added');
   });
 
@@ -604,7 +691,17 @@ header{border-bottom:1px solid var(--border-light);padding:var(--sp-xl) 0 var(--
 
       html+='<div class="card '+(isLink?'is-link':'is-skill')+'" style="animation-delay:'+i*0.04+'s">';
       html+='<div class="card-bar"></div>';
-      html+='<div class="card-thumb"><div class="card-thumb-icon">'+(isLink?'🔗':'⚡')+'</div>';
+
+      // Show preview if available, otherwise show icon
+      if(item.preview&&item.preview.dataUrl){
+        if(item.preview.type==='video'){
+          html+='<div class="card-thumb" style="padding:0;height:auto;min-height:96px"><video src="'+item.preview.dataUrl+'" class="card-preview-video" muted autoplay loop playsinline></video>';
+        } else {
+          html+='<div class="card-thumb" style="padding:0;height:auto;min-height:96px"><img src="'+item.preview.dataUrl+'" class="card-preview" alt="Preview">';
+        }
+      } else {
+        html+='<div class="card-thumb"><div class="card-thumb-icon">'+(isLink?'🔗':'⚡')+'</div>';
+      }
       html+='<span class="card-badge">'+(isLink?'Link':'Skill')+'</span>';
       html+='<button class="card-delete" data-del="'+item.id+'" title="Remove">×</button></div>';
       html+='<div class="card-body">';
@@ -654,8 +751,8 @@ header{border-bottom:1px solid var(--border-light);padding:var(--sp-xl) 0 var(--
 
   // Export
   document.getElementById('btn-export').addEventListener('click',function(){
-    var p={repository:'relayprotocol/knowledge-base',exportedAt:new Date().toISOString(),totalEntries:subs.length,entries:subs.map(function(s){var o={id:s.id,type:s.type,title:s.title,description:s.description,tags:s.tags,createdAt:new Date(s.createdAt).toISOString()};if(s.url)o.url=s.url;if(s.fileName)o.fileName=s.fileName;if(s.fileContent)o.fileContent=s.fileContent;return o})};
-    dlFile('relay-kb-export-'+Date.now()+'.json',JSON.stringify(p,null,2));
+    var p={repository:'lingzizheng/hackathon',exportedAt:new Date().toISOString(),totalEntries:subs.length,entries:subs.map(function(s){var o={id:s.id,type:s.type,title:s.title,description:s.description,tags:s.tags,createdAt:new Date(s.createdAt).toISOString()};if(s.url)o.url=s.url;if(s.fileName)o.fileName=s.fileName;if(s.fileContent)o.fileContent=s.fileContent;return o})};
+    dlFile('relay-hackathon-db-export-'+Date.now()+'.json',JSON.stringify(p,null,2));
     toast('Exported — ready to push to GitHub');
   });
 
